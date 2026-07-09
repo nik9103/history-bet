@@ -1,0 +1,106 @@
+.dice {
+  position: relative;
+  display: inline-block;
+  border-radius: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(206, 9, 12, 0.8);
+}
+
+.dot,
+.dotSmall {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--dot-color);
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+}
+
+.dotSmall {
+  width: 1.714px;
+  height: 1.714px;
+}
+
+.market {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.marketLg {
+  width: 42px;
+  height: 42px;
+}
+
+.marketImg,
+.spinnerImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fill-secondary);
+  border-radius: 28px;
+}
+
+.spinnerImg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.betIconBlue,
+.betIconRed,
+.drawIcon,
+.anyRedIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.betIconBlue {
+  background: var(--color-blue-500);
+}
+
+.betIconRed {
+  background: var(--color-red-500);
+}
+
+.drawIcon {
+  background: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 10px;
+  color: var(--text-black);
+  text-transform: uppercase;
+}
+
+.anyRedIcon {
+  background: var(--color-red-500);
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--color-red-900);
+  text-transform: uppercase;
+}

@@ -1,0 +1,111 @@
+.receipt {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-top: 40px;
+  margin-bottom: 40px;
+}
+
+.comboTitle {
+  margin: 0;
+  font-size: var(--heading-h5);
+  line-height: var(--heading-h5-lh);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.roundId {
+  margin: 0;
+  font-size: var(--caption-l);
+  line-height: var(--caption-l-lh);
+  color: var(--text-tertiary);
+}
+
+.bets {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.betBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.betHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+}
+
+.betTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--body-s);
+  line-height: var(--body-s-lh);
+  color: var(--text-primary);
+}
+
+.betPayout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--body-s);
+  line-height: var(--body-s-lh);
+  color: var(--text-primary);
+}
+
+.multiplier {
+  color: var(--text-tertiary);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-default);
+  margin-bottom: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  font-size: var(--body-s);
+  line-height: var(--body-s-lh);
+  color: var(--text-primary);
+}

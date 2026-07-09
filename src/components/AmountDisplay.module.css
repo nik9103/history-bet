@@ -1,0 +1,34 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.amount {
+  font-family: var(--font-mono);
+  font-size: var(--body-s);
+  line-height: var(--body-s-lh);
+}
+
+.amountCaption {
+  font-size: var(--caption-l);
+  line-height: var(--caption-l-lh);
+}
+
+.positive {
+  color: var(--color-lime-400);
+}
+
+.negative,
+.neutral {
+  color: var(--text-tertiary);
+}
+
+.subtitle {
+  font-size: var(--caption-m);
+  line-height: var(--caption-m-lh);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}

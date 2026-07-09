@@ -1,0 +1,54 @@
+.content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0 16px 24px;
+  overflow: hidden;
+}
+
+.contentMatch {
+  padding-top: 12px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: auto;
+  scrollbar-width: none;
+}
+
+.listMatch {
+  gap: 0px;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.fadeTop,
+.fadeBottom {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 40px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.fadeTop {
+  top: 0;
+  background: linear-gradient(180deg, var(--bg-screen) 0%, rgba(25, 30, 40, 0) 100%);
+}
+
+.fadeBottom {
+  bottom: 24px;
+  background: linear-gradient(0deg, var(--bg-screen) 0%, rgba(25, 30, 40, 0) 100%);
+}
+
+.fadeHidden {
+  opacity: 0;
+}

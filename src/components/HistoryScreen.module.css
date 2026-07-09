@@ -1,0 +1,85 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(19, 23, 31, 0.9);
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  width: 568px;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.screen {
+  width: 567px;
+  height: 479px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-screen);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0 16px 24px;
+  overflow: hidden;
+}
+
+.matches {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: auto;
+  scrollbar-width: none;
+}
+
+.matches::-webkit-scrollbar {
+  display: none;
+}
+
+.matches > article {
+  flex-shrink: 0;
+}
+
+.fadeTop,
+.fadeBottom {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 40px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.fadeTop {
+  top: 0;
+  background: linear-gradient(180deg, var(--bg-screen) 0%, rgba(25, 30, 40, 0) 100%);
+}
+
+.fadeBottom {
+  bottom: 24px;
+  background: linear-gradient(0deg, var(--bg-screen) 0%, rgba(25, 30, 40, 0) 100%);
+}
+
+.fadeHidden {
+  opacity: 0;
+}

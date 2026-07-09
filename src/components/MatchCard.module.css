@@ -1,0 +1,167 @@
+.card {
+  width: 100%;
+  border-radius: var(--radius-card);
+  border: 0.5px solid var(--border-default);
+  box-shadow: var(--shadow-s);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.open {
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+}
+
+.openWithPeek {
+  max-height: calc(100% - 50px);
+}
+
+.openFull {
+  max-height: 100%;
+}
+
+.closed {
+  background: var(--bg-tertiary);
+  transition: background-color 0.2s ease;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 12px;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.chevron {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.chevron svg {
+  display: block;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: var(--caption-l);
+  line-height: var(--caption-l-lh);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.meta {
+  font-size: var(--caption-m);
+  line-height: var(--caption-m-lh);
+  color: var(--text-tertiary);
+}
+
+.dot {
+  color: var(--text-muted);
+}
+
+.chevron svg {
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.chevronUp svg {
+  transform: rotate(180deg);
+}
+
+.roundsWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  flex: 1 1 auto;
+  min-height: 0;
+  transition: grid-template-rows 0.28s ease;
+}
+
+.roundsOpen {
+  grid-template-rows: 1fr;
+}
+
+.roundsInner {
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.roundsContent {
+  position: relative;
+  padding: 0 12px 12px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.roundsScroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  scrollbar-width: none;
+}
+
+.roundsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.fadeTop,
+.fadeBottom {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 40px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.fadeTop {
+  top: 0;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(25, 30, 40, 0) 100%);
+}
+
+.fadeBottom {
+  bottom: 12px;
+  background: linear-gradient(0deg, var(--bg-secondary) 0%, rgba(25, 30, 40, 0) 100%);
+}
+
+.fadeHidden {
+  opacity: 0;
+}
