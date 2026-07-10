@@ -81,8 +81,70 @@
   overflow: hidden;
 }
 
-.heroHidden {
-  display: none;
+.receiptBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 16px 16px;
+  background: linear-gradient(
+    0deg,
+    var(--bg-screen) 0%,
+    rgba(25, 30, 40, 0.92) 45%,
+    rgba(25, 30, 40, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.receiptBarSide {
+  width: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.receiptBtn {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius-button);
+  background: var(--fill-primary);
+  font-size: var(--caption-l);
+  line-height: var(--caption-l-lh);
+  font-weight: 500;
+  color: var(--text-black);
+  pointer-events: auto;
+}
+
+.scrollTopBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-button);
+  background: var(--fill-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  line-height: 0;
+  padding: 0;
+  pointer-events: auto;
+  transition: opacity 0.15s ease;
+}
+
+.scrollTopBtn svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.scrollTopBtnHidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .throwTitle {
@@ -139,35 +201,4 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-}
-
-.receiptBar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  height: 60px;
-  padding: 0 16px 16px;
-  background: linear-gradient(
-    0deg,
-    var(--bg-screen) 0%,
-    rgba(25, 30, 40, 0.92) 45%,
-    rgba(25, 30, 40, 0) 100%
-  );
-  pointer-events: none;
-}
-
-.receiptBtn {
-  height: 32px;
-  padding: 0 8px;
-  border-radius: var(--radius-button);
-  background: var(--fill-primary);
-  font-size: var(--caption-l);
-  line-height: var(--caption-l-lh);
-  font-weight: 500;
-  color: var(--text-black);
-  pointer-events: auto;
 }

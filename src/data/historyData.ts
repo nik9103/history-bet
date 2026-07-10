@@ -629,6 +629,33 @@ export function getBetHistoryRoundGroups(): MatchRoundGroup[] {
     .filter((group) => group.rounds.length > 0);
 }
 
+export type BetFilter = 'all' | 'won' | 'lost';
+
+function matchesBetFilter(bet: BetItem, filter: BetFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'won') return bet.result === 'guess';
+  return bet.result === 'loss';
+}
+
+export function filterBetHistoryRoundGroups(
+  groups: MatchRoundGroup[],
+  filter: BetFilter,
+): MatchRoundGroup[] {
+  if (filter === 'all') return groups;
+
+  return groups
+    .map((group) => ({
+      ...group,
+      rounds: group.rounds
+        .map((round) => ({
+          ...round,
+          bets: round.bets?.filter((bet) => matchesBetFilter(bet, filter)),
+        }))
+        .filter((round) => isBetHistoryRound(round)),
+    }))
+    .filter((group) => group.rounds.length > 0);
+}
+
 export function findRoundInMatches(matchId: string, roundId: string) {
   const match = matches.find((item) => item.id === matchId);
   if (!match) return null;

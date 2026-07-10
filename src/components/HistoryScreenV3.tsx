@@ -14,7 +14,7 @@ import { HistoryHeader } from './HistoryHeader';
 import { MatchGroupV3 } from './MatchGroupV3';
 import { ViewReceipt } from './ViewReceipt';
 import { MarketIcon } from './icons/MarketIcon';
-import { RewatchIcon } from './icons/Icons';
+import { RewatchIcon, ChevronIcon } from './icons/Icons';
 import styles from './HistoryScreenV3.module.css';
 
 type View = 'list' | 'throw' | 'receipt';
@@ -218,6 +218,19 @@ export function HistoryScreenV3() {
     setView('receipt');
   };
 
+  const handleScrollToTop = () => {
+    const container = listRef.current;
+    if (!container) return;
+
+    isProgrammaticScrollRef.current = true;
+    container.scrollTo({ top: 0, behavior: 'smooth' });
+
+    window.setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+      updateScrollState();
+    }, 300);
+  };
+
   if (view === 'receipt' && selectedRound) {
     const matchNumber = selectedRound.match.title.replace(/[^\d]/g, '');
 
@@ -236,7 +249,7 @@ export function HistoryScreenV3() {
   if (view === 'throw' && selectedRound) {
     const showFadeTop = fadeEnabled && !scrollState.atTop;
     const showFadeBottom = fadeEnabled && !scrollState.atBottom;
-    const heroHidden = Boolean(expandedBetId);
+    const showScrollTop = !scrollState.atTop;
 
     return (
       <div className={styles.screen}>
@@ -249,7 +262,7 @@ export function HistoryScreenV3() {
         <div className={styles.content}>
           <div ref={listRef} className={`${styles.list} ${styles.listThrow}`}>
             <div className={styles.throwPanel}>
-              <div className={`${styles.hero} ${heroHidden ? styles.heroHidden : ''}`}>
+              <div className={styles.hero}>
                 <MarketIcon size="lg" />
                 <h2 className={styles.throwTitle}>{selectedRound.round.title}</h2>
                 <p className={styles.throwMeta}>
@@ -293,9 +306,20 @@ export function HistoryScreenV3() {
           />
         </div>
         <div className={styles.receiptBar}>
+          <div className={styles.receiptBarSide} aria-hidden="true" />
           <button type="button" className={styles.receiptBtn} onClick={handleOpenReceipt}>
             View receipt
           </button>
+          <div className={styles.receiptBarSide}>
+            <button
+              type="button"
+              className={`${styles.scrollTopBtn} ${showScrollTop ? '' : styles.scrollTopBtnHidden}`}
+              onClick={handleScrollToTop}
+              aria-label="Scroll to top"
+            >
+              <ChevronIcon direction="up" />
+            </button>
+          </div>
         </div>
       </div>
     );

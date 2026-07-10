@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  filterBetHistoryRoundGroups,
   getBetHistoryRoundGroups,
   getResultHistoryRoundGroups,
+  type BetFilter,
 } from '../data/historyData';
-import { HistoryBottomTabs, type HistoryBottomTab } from './HistoryBottomTabs';
+import { HistoryBottomTabsV4, type HistoryBottomTab } from './HistoryBottomTabsV4';
 import { HistoryHeader } from './HistoryHeader';
 import { MatchGroupV4 } from './MatchGroupV4';
 import { ViewReceipt } from './ViewReceipt';
@@ -77,6 +79,7 @@ function getExpandedRoundScrollTop(
 export function HistoryScreenV4() {
   const [view, setView] = useState<View>('list');
   const [historyTab, setHistoryTab] = useState<HistoryBottomTab>('bet');
+  const [betFilter, setBetFilter] = useState<BetFilter>('all');
   const [expandedRoundId, setExpandedRoundId] = useState<string | null>(null);
   const [scrollState, setScrollState] = useState<ScrollState>({
     atTop: true,
@@ -88,12 +91,20 @@ export function HistoryScreenV4() {
   const isProgrammaticScrollRef = useRef(false);
 
   const roundGroups =
-    historyTab === 'bet' ? getBetHistoryRoundGroups() : getResultHistoryRoundGroups();
+    historyTab === 'bet'
+      ? filterBetHistoryRoundGroups(getBetHistoryRoundGroups(), betFilter)
+      : getResultHistoryRoundGroups();
+  const filterDisabled = historyTab === 'result';
 
   const handleHistoryTabChange = (tab: HistoryBottomTab) => {
     setHistoryTab(tab);
     setExpandedRoundId(null);
     setView('list');
+  };
+
+  const handleBetFilterChange = (filter: BetFilter) => {
+    setBetFilter(filter);
+    setExpandedRoundId(null);
   };
 
   const updateScrollState = useCallback(() => {
@@ -104,7 +115,7 @@ export function HistoryScreenV4() {
 
   useEffect(() => {
     setFadeEnabled(false);
-  }, [expandedRoundId, historyTab, view]);
+  }, [expandedRoundId, historyTab, betFilter, view]);
 
   useEffect(() => {
     if (!expandedRoundId || !listRef.current || view !== 'list') return;
@@ -174,7 +185,7 @@ export function HistoryScreenV4() {
       container.removeEventListener('wheel', handleWheel);
       resizeObserver.disconnect();
     };
-  }, [view, expandedRoundId, historyTab, updateScrollState]);
+  }, [view, expandedRoundId, historyTab, betFilter, updateScrollState]);
 
   const handleToggleRound = (roundId: string) => {
     setExpandedRoundId((current) => (current === roundId ? null : roundId));
@@ -214,7 +225,13 @@ export function HistoryScreenV4() {
           aria-hidden="true"
         />
       </div>
-      <HistoryBottomTabs activeTab={historyTab} onChange={handleHistoryTabChange} />
+      <HistoryBottomTabsV4
+        activeTab={historyTab}
+        onChange={handleHistoryTabChange}
+        betFilter={betFilter}
+        onBetFilterChange={handleBetFilterChange}
+        filterDisabled={filterDisabled}
+      />
     </div>
   );
 }
