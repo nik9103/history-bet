@@ -10,7 +10,7 @@ type VariantTabsProps = {
 export function VariantTabs({ variant, onChange }: VariantTabsProps) {
   return (
     <div className={styles.tabs} role="tablist" aria-label="History variants">
-      <button
+      {/* <button
         type="button"
         role="tab"
         aria-selected={variant === 'v1'}
@@ -18,7 +18,7 @@ export function VariantTabs({ variant, onChange }: VariantTabsProps) {
         onClick={() => onChange('v1')}
       >
         Вариант 1
-      </button>
+      </button> */}
       <button
         type="button"
         role="tab"

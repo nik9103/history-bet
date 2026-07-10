@@ -160,8 +160,10 @@ function HistoryScreenV1() {
   );
 }
 
+void HistoryScreenV1;
+
 export function HistoryScreen() {
-  const [variant, setVariant] = useState<HistoryVariant>('v1');
+  const [variant, setVariant] = useState<HistoryVariant>('v2');
 
   return (
     <div className={styles.app}>
@@ -169,9 +171,8 @@ export function HistoryScreen() {
         <VariantTabs variant={variant} onChange={setVariant} />
         <div className={styles.container}>
           <div className={styles.screen}>
-            {variant === 'v1' ? (
-              <HistoryScreenV1 />
-            ) : variant === 'v2' ? (
+            {/* {variant === 'v1' ? <HistoryScreenV1 /> : null} */}
+            {variant === 'v2' ? (
               <HistoryScreenV2 />
             ) : variant === 'v3' ? (
               <HistoryScreenV3 />
