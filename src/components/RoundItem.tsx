@@ -51,6 +51,8 @@ export function RoundItem({
     const list = betsListRef.current;
     if (!expanded || !list) return;
 
+    list.scrollTop = 0;
+
     const handleScroll = () => updateBetsScrollState();
     list.addEventListener('scroll', handleScroll, { passive: true });
 

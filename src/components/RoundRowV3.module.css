@@ -1,0 +1,93 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 50px;
+  padding-right: 4px;
+  border-radius: 4px;
+  width: 100%;
+  text-align: left;
+}
+
+.rowHovered {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  min-width: 0;
+}
+
+.left {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.iconWrap,
+.spinnerWrap {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spinnerWrap {
+  border-radius: 28px;
+  background: var(--fill-secondary);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--body-s);
+  line-height: var(--body-s-lh);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.meta {
+  font-size: var(--caption-m);
+  line-height: var(--caption-m-lh);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.dot {
+  color: var(--text-muted);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.chevron svg {
+  display: block;
+}

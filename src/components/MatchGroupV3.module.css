@@ -1,0 +1,34 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  padding: 6px;
+}
+
+.matchId {
+  font-size: var(--caption-m);
+  line-height: var(--caption-m-lh);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.dateLabel {
+  font-size: var(--caption-m);
+  line-height: var(--caption-m-lh);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.rounds {
+  display: flex;
+  flex-direction: column;
+}

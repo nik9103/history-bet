@@ -577,6 +577,82 @@ export const matches: MatchItem[] = [
   createMatch(15, '3 Jan', '1234558', 5, { participated: false }),
 ];
 
+export type MatchRoundGroup = {
+  match: MatchItem;
+  dateLabel: string;
+  rounds: RoundItem[];
+};
+
+const MATCH_DATE_LABELS = ['today', 'Yesterday', '2 days ago'];
+
+export function getParticipatedRoundGroups(): MatchRoundGroup[] {
+  return matches
+    .filter((match) => match.summary !== null)
+    .map((match, index) => ({
+      match,
+      dateLabel: MATCH_DATE_LABELS[index] ?? match.date,
+      rounds: match.rounds,
+    }));
+}
+
+export function isBetHistoryRound(round: RoundItem): boolean {
+  return Boolean(round.bets?.length && round.amount);
+}
+
+export function getBetHistoryRoundGroups(): MatchRoundGroup[] {
+  return getParticipatedRoundGroups()
+    .map((group) => ({
+      ...group,
+      rounds: group.rounds.filter(isBetHistoryRound),
+    }))
+    .filter((group) => group.rounds.length > 0);
+}
+
+export function findRoundInMatches(matchId: string, roundId: string) {
+  const match = matches.find((item) => item.id === matchId);
+  if (!match) return null;
+
+  const round = match.rounds.find((item) => item.id === roundId);
+  if (!round) return null;
+
+  return { match, round };
+}
+
+export function getBetReceiptSections(bet: BetItem) {
+  const stakeValue = bet.stake.replace(/^of\s+/i, '');
+  const prizeAmount = bet.amount.startsWith('+')
+    ? `€${Math.round(parseInt(bet.stake.replace(/\D/g, ''), 10) * parseFloat(bet.multiplier.replace('x', '').replace(',', '.')))}`
+    : '€0';
+
+  return [
+    [
+      { label: 'Bet ID', value: 'jfk473jsyeK' },
+      { label: 'Bet status', value: 'Conducted' },
+      { label: 'Result', value: bet.result === 'guess' ? 'Guess' : 'Loss' },
+    ],
+    [
+      { label: 'Bet sum', value: stakeValue.replace('€', '€') },
+      { label: '14% Bet tax', value: '€14' },
+      { label: 'Bet including taxes', value: '€114' },
+    ],
+    [
+      { label: 'Prize amount', value: prizeAmount },
+      { label: '2% prize tax', value: '€3,24' },
+      { label: 'Prize including taxes', value: '€158,76' },
+    ],
+  ];
+}
+
+export function formatThrowDetailTitle(match: MatchItem, round: RoundItem) {
+  const matchNumber = match.title.replace(/[^\d]/g, '');
+  return `Match ${matchNumber} | Throw ${round.number}`;
+}
+
+export function formatThrowDetailSubtitle(match: MatchItem, round: RoundItem) {
+  const startTime = round.time.split('-')[0]?.trim() ?? '';
+  return `2026 ${match.date}, ${startTime} | Nards Combo`;
+}
+
 export const receiptBets: ReceiptBet[] = [
   {
     id: 'receipt-1',

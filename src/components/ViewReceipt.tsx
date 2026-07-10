@@ -7,15 +7,26 @@ import styles from './ViewReceipt.module.css';
 type ViewReceiptProps = {
   onBack: () => void;
   onClose: () => void;
+  title?: string;
+  subtitle?: string;
+  comboTitle?: string;
+  roundIdLabel?: string;
 };
 
-export function ViewReceipt({ onBack, onClose }: ViewReceiptProps) {
+export function ViewReceipt({
+  onBack,
+  onClose,
+  title = 'Match 24 | Throw 31',
+  subtitle = '2026 Jan 12, 14:56 | Nards Combo',
+  comboTitle = 'Combo: 24',
+  roundIdLabel = 'Round ID: jfk473jsyeK',
+}: ViewReceiptProps) {
   return (
     <div className={styles.receipt}>
       <HistoryHeader
         mode="receipt"
-        title="Match 24 | Throw 31"
-        subtitle="2026 Jan 12, 14:56 | Nards Combo"
+        title={title}
+        subtitle={subtitle}
         onBack={onBack}
         onClose={onClose}
       />
@@ -23,8 +34,8 @@ export function ViewReceipt({ onBack, onClose }: ViewReceiptProps) {
       <div className={styles.content}>
         <div className={styles.hero}>
           <MarketIcon size="lg" />
-          <h2 className={styles.comboTitle}>Combo: 24</h2>
-          <p className={styles.roundId}>Round ID: jfk473jsyeK</p>
+          <h2 className={styles.comboTitle}>{comboTitle}</h2>
+          <p className={styles.roundId}>{roundIdLabel}</p>
         </div>
 
         <div className={styles.bets}>

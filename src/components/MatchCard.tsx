@@ -45,7 +45,6 @@ function getRoundsScrollState(container: HTMLDivElement): RoundsScrollState {
 
 const EXPAND_ANIMATION_MS = 300;
 const MATCH_OPEN_ANIMATION_MS = 280;
-const ROUND_PEEK_HEIGHT = 51;
 const SCROLL_ALIGN_THRESHOLD = 2;
 
 function getScrollTopToAlignWithContainer(
@@ -91,15 +90,19 @@ function getExpandedRoundScrollTop(
   container: HTMLDivElement,
   expandedEl: HTMLElement,
 ): number {
-  const scrollTop = expandedEl.offsetTop;
-  const nextEl = expandedEl.nextElementSibling as HTMLElement | null;
+  return Math.max(0, getScrollTopToAlignWithContainer(container, expandedEl));
+}
 
-  if (!nextEl) return scrollTop;
-
-  const viewportBottom = scrollTop + container.clientHeight;
-  if (nextEl.offsetTop < viewportBottom - 1) return scrollTop;
-
-  return Math.max(scrollTop, nextEl.offsetTop + ROUND_PEEK_HEIGHT - container.clientHeight);
+function ensureExpandedRoundAtTop(
+  container: HTMLDivElement,
+  expandedEl: HTMLElement,
+) {
+  if (!isElementAlignedToContainerTop(container, expandedEl)) {
+    container.scrollTo({
+      top: getExpandedRoundScrollTop(container, expandedEl),
+      behavior: 'auto',
+    });
+  }
 }
 
 export function MatchCard({
@@ -205,7 +208,16 @@ export function MatchCard({
     scrollToExpanded('auto');
 
     const animationTimeoutId = window.setTimeout(() => {
-      scrollToExpanded('smooth');
+      if (cancelled) return;
+
+      const expandedEl = container.querySelector(
+        `[data-round-id="${expandedRoundId}"]`,
+      ) as HTMLElement | null;
+
+      if (expandedEl) {
+        ensureExpandedRoundAtTop(container, expandedEl);
+      }
+
       finishTimeoutId = window.setTimeout(() => {
         if (cancelled) return;
         isProgrammaticScrollRef.current = false;

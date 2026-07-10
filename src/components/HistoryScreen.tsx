@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { matches } from '../data/historyData';
 import { HistoryHeader } from './HistoryHeader';
 import { HistoryScreenV2 } from './HistoryScreenV2';
+import { HistoryScreenV3 } from './HistoryScreenV3';
 import { MatchCard } from './MatchCard';
 import { VariantTabs, type HistoryVariant } from './VariantTabs';
 import { ViewReceipt } from './ViewReceipt';
@@ -151,7 +152,13 @@ export function HistoryScreen() {
         <VariantTabs variant={variant} onChange={setVariant} />
         <div className={styles.container}>
           <div className={styles.screen}>
-            {variant === 'v1' ? <HistoryScreenV1 /> : <HistoryScreenV2 />}
+            {variant === 'v1' ? (
+              <HistoryScreenV1 />
+            ) : variant === 'v2' ? (
+              <HistoryScreenV2 />
+            ) : (
+              <HistoryScreenV3 />
+            )}
           </div>
         </div>
       </div>

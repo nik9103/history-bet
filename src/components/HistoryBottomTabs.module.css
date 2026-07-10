@@ -1,0 +1,58 @@
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 60px;
+  padding: 0 16px 16px;
+  background: linear-gradient(
+    0deg,
+    var(--bg-screen) 0%,
+    rgba(25, 30, 40, 0.92) 45%,
+    rgba(25, 30, 40, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.tabs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 1px;
+  border-radius: var(--radius-button);
+  background: var(--bg-deep);
+  pointer-events: auto;
+}
+
+.thumb {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  height: 28px;
+  border-radius: var(--radius-button);
+  background: var(--fill-primary);
+  transition: transform 0.25s ease, width 0.25s ease;
+  z-index: 0;
+}
+
+.tab {
+  position: relative;
+  z-index: 1;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: var(--radius-button);
+  font-size: var(--caption-l);
+  line-height: var(--caption-l-lh);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  background: transparent;
+  transition: color 0.2s ease;
+}
+
+.tabActive {
+  color: var(--text-black);
+}
