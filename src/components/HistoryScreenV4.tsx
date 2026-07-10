@@ -1,22 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  getBetHistoryMatches,
-  isBetHistoryRound,
-  matches,
-  type MatchItem,
+  getBetHistoryRoundGroups,
+  getResultHistoryRoundGroups,
 } from '../data/historyData';
 import { HistoryBottomTabs, type HistoryBottomTab } from './HistoryBottomTabs';
 import { HistoryHeader } from './HistoryHeader';
-import { MatchRowV2 } from './MatchRowV2';
-import { RoundItemV2 } from './RoundItemV2';
+import { MatchGroupV4 } from './MatchGroupV4';
 import { ViewReceipt } from './ViewReceipt';
-import styles from './HistoryScreenV2.module.css';
+import styles from './HistoryScreenV4.module.css';
+
+type View = 'list' | 'receipt';
 
 type ScrollState = {
   atTop: boolean;
   atBottom: boolean;
   firstVisibleRoundId: string | null;
 };
+
+const EXPAND_ANIMATION_MS = 300;
+const ROUND_PEEK_HEIGHT = 51;
 
 function getScrollState(container: HTMLDivElement): ScrollState {
   const atTop = container.scrollTop <= 1;
@@ -57,23 +59,6 @@ function handleNestedWheel(event: WheelEvent) {
   }
 }
 
-function formatMatchDate(date: string): string {
-  const [day, month] = date.split(' ');
-  return `2026 ${month} ${day}`;
-}
-
-function getMatchDetailTitle(match: MatchItem) {
-  const number = match.title.replace(/[^\d]/g, '');
-  return `Match ${number}`;
-}
-
-function getMatchDetailSubtitle(match: MatchItem) {
-  return `${formatMatchDate(match.date)} | Nards Combo`;
-}
-
-const EXPAND_ANIMATION_MS = 300;
-const ROUND_PEEK_HEIGHT = 51;
-
 function getExpandedRoundScrollTop(
   container: HTMLDivElement,
   expandedEl: HTMLElement,
@@ -89,10 +74,9 @@ function getExpandedRoundScrollTop(
   return Math.max(scrollTop, nextEl.offsetTop + ROUND_PEEK_HEIGHT - container.clientHeight);
 }
 
-export function HistoryScreenV2() {
-  const [view, setView] = useState<'list' | 'match' | 'receipt'>('list');
+export function HistoryScreenV4() {
+  const [view, setView] = useState<View>('list');
   const [historyTab, setHistoryTab] = useState<HistoryBottomTab>('bet');
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [expandedRoundId, setExpandedRoundId] = useState<string | null>(null);
   const [scrollState, setScrollState] = useState<ScrollState>({
     atTop: true,
@@ -103,18 +87,11 @@ export function HistoryScreenV2() {
   const listRef = useRef<HTMLDivElement>(null);
   const isProgrammaticScrollRef = useRef(false);
 
-  const selectedMatch = matches.find((match) => match.id === selectedMatchId) ?? null;
-  const displayMatches = historyTab === 'bet' ? getBetHistoryMatches() : matches;
-  const displayRounds =
-    selectedMatch === null
-      ? []
-      : historyTab === 'bet'
-        ? selectedMatch.rounds.filter(isBetHistoryRound)
-        : selectedMatch.rounds;
+  const roundGroups =
+    historyTab === 'bet' ? getBetHistoryRoundGroups() : getResultHistoryRoundGroups();
 
   const handleHistoryTabChange = (tab: HistoryBottomTab) => {
     setHistoryTab(tab);
-    setSelectedMatchId(null);
     setExpandedRoundId(null);
     setView('list');
   };
@@ -127,10 +104,10 @@ export function HistoryScreenV2() {
 
   useEffect(() => {
     setFadeEnabled(false);
-  }, [expandedRoundId, selectedMatchId]);
+  }, [expandedRoundId, historyTab, view]);
 
   useEffect(() => {
-    if (!expandedRoundId || !listRef.current || view !== 'match') return;
+    if (!expandedRoundId || !listRef.current || view !== 'list') return;
 
     const container = listRef.current;
     let cancelled = false;
@@ -197,98 +174,43 @@ export function HistoryScreenV2() {
       container.removeEventListener('wheel', handleWheel);
       resizeObserver.disconnect();
     };
-  }, [view, selectedMatchId, expandedRoundId, historyTab, updateScrollState]);
+  }, [view, expandedRoundId, historyTab, updateScrollState]);
 
-  const handleSelectMatch = (matchId: string) => {
-    setSelectedMatchId(matchId);
-    setExpandedRoundId(null);
-    setView('match');
-  };
-
-  const handleBackToList = () => {
-    setView('list');
-    setSelectedMatchId(null);
-    setExpandedRoundId(null);
+  const handleToggleRound = (roundId: string) => {
+    setExpandedRoundId((current) => (current === roundId ? null : roundId));
   };
 
   if (view === 'receipt') {
-    return (
-      <ViewReceipt onBack={() => setView('match')} onClose={() => setView('list')} />
-    );
+    return <ViewReceipt onBack={() => setView('list')} onClose={() => setView('list')} />;
   }
 
-  if (view === 'match' && selectedMatch) {
-    const showFadeTop = fadeEnabled && !scrollState.atTop;
-    const showFadeBottom = fadeEnabled && !scrollState.atBottom;
-
-    const getTimelineLines = (roundId: string, index: number) => {
-      if (displayRounds.length === 1) {
-        return { hideTopLine: true, hideBottomLine: true };
-      }
-
-      return {
-        hideTopLine: roundId === scrollState.firstVisibleRoundId,
-        hideBottomLine: index === displayRounds.length - 1,
-      };
-    };
-
-    return (
-      <div className={styles.screen}>
-        <HistoryHeader
-          mode="detail"
-          title={getMatchDetailTitle(selectedMatch)}
-          subtitle={getMatchDetailSubtitle(selectedMatch)}
-          onBack={handleBackToList}
-          onClose={handleBackToList}
-        />
-        <div className={`${styles.content} ${styles.contentMatch}`}>
-          <div ref={listRef} className={`${styles.list} ${styles.listMatch}`}>
-            {displayRounds.map((round, index) => {
-              const { hideTopLine, hideBottomLine } = getTimelineLines(round.id, index);
-
-              return (
-                <RoundItemV2
-                  key={round.id}
-                  round={round}
-                  hideTopLine={hideTopLine}
-                  hideBottomLine={hideBottomLine}
-                  expanded={expandedRoundId === round.id}
-                  onToggleExpand={() =>
-                    setExpandedRoundId((current) => (current === round.id ? null : round.id))
-                  }
-                  onViewReceipt={() => setView('receipt')}
-                />
-              );
-            })}
-          </div>
-          <div
-            className={`${styles.fadeTop} ${showFadeTop ? '' : styles.fadeHidden}`}
-            aria-hidden="true"
-          />
-          <div
-            className={`${styles.fadeBottom} ${showFadeBottom ? '' : styles.fadeHidden}`}
-            aria-hidden="true"
-          />
-        </div>
-      </div>
-    );
-  }
+  const showFadeTop = fadeEnabled && !scrollState.atTop;
+  const showFadeBottom = fadeEnabled && !scrollState.atBottom;
 
   return (
     <div className={styles.screen}>
       <HistoryHeader onClose={() => undefined} />
       <div className={`${styles.content} ${styles.contentWithBottomTabs}`}>
         <div ref={listRef} className={styles.list}>
-          {displayMatches.map((match) => (
-            <MatchRowV2 key={match.id} match={match} onSelect={() => handleSelectMatch(match.id)} />
+          {roundGroups.map((group) => (
+            <MatchGroupV4
+              key={group.match.id}
+              match={group.match}
+              dateLabel={group.dateLabel}
+              rounds={group.rounds}
+              firstVisibleRoundId={scrollState.firstVisibleRoundId}
+              expandedRoundId={expandedRoundId}
+              onToggleRound={handleToggleRound}
+              onViewReceipt={() => setView('receipt')}
+            />
           ))}
         </div>
         <div
-          className={`${styles.fadeTop} ${scrollState.atTop ? styles.fadeHidden : ''}`}
+          className={`${styles.fadeTop} ${showFadeTop ? '' : styles.fadeHidden}`}
           aria-hidden="true"
         />
         <div
-          className={`${styles.fadeBottom} ${styles.fadeBottomWithTabs} ${scrollState.atBottom ? styles.fadeHidden : ''}`}
+          className={`${styles.fadeBottom} ${showFadeBottom ? '' : styles.fadeHidden}`}
           aria-hidden="true"
         />
       </div>

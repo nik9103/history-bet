@@ -1,6 +1,6 @@
 import styles from './VariantTabs.module.css';
 
-export type HistoryVariant = 'v1' | 'v2' | 'v3';
+export type HistoryVariant = 'v1' | 'v2' | 'v3' | 'v4';
 
 type VariantTabsProps = {
   variant: HistoryVariant;
@@ -36,6 +36,15 @@ export function VariantTabs({ variant, onChange }: VariantTabsProps) {
         onClick={() => onChange('v3')}
       >
         Вариант 3
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={variant === 'v4'}
+        className={`${styles.tab} ${variant === 'v4' ? styles.tabActive : ''}`}
+        onClick={() => onChange('v4')}
+      >
+        Вариант 4
       </button>
     </div>
   );

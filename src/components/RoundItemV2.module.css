@@ -13,6 +13,10 @@
   border-radius: 4px;
 }
 
+.rowNoBets .body {
+  cursor: default;
+}
+
 .rowHovered .body {
   background: var(--bg-tertiary);
   border-radius: 8px;
@@ -151,7 +155,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   border: 0.5px solid var(--border-default);
-  background: var(--fill-secondary);
+  background: var(--bg-tertiary);
   overflow: hidden;
   min-width: 0;
 }
@@ -247,7 +251,7 @@
   bottom: -8px;
   height: 36px;
   pointer-events: none;
-  background: linear-gradient(0deg, var(--fill-secondary) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(0deg, var(--bg-tertiary) 0%, rgba(29, 35, 47, 0) 100%);
   transition: opacity 0.15s ease;
 }
 

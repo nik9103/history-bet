@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { matches } from '../data/historyData';
+import {
+  getBetHistoryMatches,
+  getParticipatedMatches,
+  matches,
+} from '../data/historyData';
+import { HistoryBottomTabs, type HistoryBottomTab } from './HistoryBottomTabs';
 import { HistoryHeader } from './HistoryHeader';
 import { HistoryScreenV2 } from './HistoryScreenV2';
 import { HistoryScreenV3 } from './HistoryScreenV3';
+import { HistoryScreenV4 } from './HistoryScreenV4';
 import { MatchCard } from './MatchCard';
 import { VariantTabs, type HistoryVariant } from './VariantTabs';
 import { ViewReceipt } from './ViewReceipt';
@@ -65,6 +71,7 @@ function handleNestedWheel(event: WheelEvent) {
 
 function HistoryScreenV1() {
   const [view, setView] = useState<'history' | 'receipt'>('history');
+  const [historyTab, setHistoryTab] = useState<HistoryBottomTab>('bet');
   const [openMatchId, setOpenMatchId] = useState<string | null>(matches[0].id);
   const [expandedRoundId, setExpandedRoundId] = useState<string | null>(null);
   const [matchesScrollState, setMatchesScrollState] = useState<MatchesScrollState>({
@@ -72,6 +79,15 @@ function HistoryScreenV1() {
     atBottom: true,
   });
   const matchesRef = useRef<HTMLDivElement>(null);
+
+  const displayMatches =
+    historyTab === 'bet' ? getBetHistoryMatches() : getParticipatedMatches();
+
+  const handleHistoryTabChange = (tab: HistoryBottomTab) => {
+    setHistoryTab(tab);
+    setOpenMatchId(null);
+    setExpandedRoundId(null);
+  };
 
   const updateMatchesScrollState = useCallback(() => {
     const container = matchesRef.current;
@@ -100,7 +116,7 @@ function HistoryScreenV1() {
       container.removeEventListener('wheel', handleWheel);
       resizeObserver.disconnect();
     };
-  }, [openMatchId, expandedRoundId, updateMatchesScrollState]);
+  }, [openMatchId, expandedRoundId, historyTab, updateMatchesScrollState]);
 
   const handleToggleMatch = (matchId: string) => {
     setOpenMatchId((current) => (current === matchId ? null : matchId));
@@ -112,16 +128,16 @@ function HistoryScreenV1() {
   }
 
   return (
-    <>
+    <div className={styles.variantScreen}>
       <HistoryHeader onClose={() => undefined} />
-      <div className={styles.content}>
+      <div className={`${styles.content} ${styles.contentWithBottomTabs}`}>
         <div ref={matchesRef} className={styles.matches}>
-          {matches.map((match, index) => (
+          {displayMatches.map((match, index) => (
             <MatchCard
               key={match.id}
               match={match}
               isOpen={openMatchId === match.id}
-              hasPeekBelow={index < matches.length - 1}
+              hasPeekBelow={index < displayMatches.length - 1}
               expandedRoundId={openMatchId === match.id ? expandedRoundId : null}
               matchesScrollRef={matchesRef}
               onToggle={() => handleToggleMatch(match.id)}
@@ -135,11 +151,12 @@ function HistoryScreenV1() {
           aria-hidden="true"
         />
         <div
-          className={`${styles.fadeBottom} ${matchesScrollState.atBottom ? styles.fadeHidden : ''}`}
+          className={`${styles.fadeBottom} ${styles.fadeBottomWithTabs} ${matchesScrollState.atBottom ? styles.fadeHidden : ''}`}
           aria-hidden="true"
         />
       </div>
-    </>
+      <HistoryBottomTabs activeTab={historyTab} onChange={handleHistoryTabChange} />
+    </div>
   );
 }
 
@@ -156,8 +173,10 @@ export function HistoryScreen() {
               <HistoryScreenV1 />
             ) : variant === 'v2' ? (
               <HistoryScreenV2 />
-            ) : (
+            ) : variant === 'v3' ? (
               <HistoryScreenV3 />
+            ) : (
+              <HistoryScreenV4 />
             )}
           </div>
         </div>

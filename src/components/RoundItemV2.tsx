@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RoundItem as RoundItemType } from '../data/historyData';
+import { BetRowV3 } from './BetRowV3';
 import { TimelineMarker } from './TimelineMarker';
 import { MarketIcon } from './icons/MarketIcon';
 import { ChevronIcon, ReceiptIcon, RewatchIcon } from './icons/Icons';
 import { AmountDisplay } from './AmountDisplay';
-import { BetRow } from './BetRow';
 import styles from './RoundItemV2.module.css';
 
 type RoundItemV2Props = {
@@ -30,6 +30,7 @@ export function RoundItemV2({
   onViewReceipt,
 }: RoundItemV2Props) {
   const [hovered, setHovered] = useState(false);
+  const [expandedBetId, setExpandedBetId] = useState<string | null>(null);
   const [betsScrollState, setBetsScrollState] = useState<BetsScrollState>({
     atBottom: true,
     hasOverflow: false,
@@ -48,6 +49,42 @@ export function RoundItemV2({
   }, []);
 
   useEffect(() => {
+    if (!expanded) setExpandedBetId(null);
+  }, [expanded]);
+
+  useEffect(() => {
+    if (!expandedBetId || !betsListRef.current || !expanded) return;
+
+    const list = betsListRef.current;
+    let cancelled = false;
+
+    const scrollToExpandedBet = () => {
+      if (cancelled) return;
+
+      const expandedEl = list.querySelector(
+        `[data-bet-id="${expandedBetId}"]`,
+      ) as HTMLElement | null;
+
+      if (!expandedEl) return;
+
+      const listTop = list.getBoundingClientRect().top;
+      const elTop = expandedEl.getBoundingClientRect().top;
+      const offset = elTop - listTop;
+
+      if (offset < 0 || offset + expandedEl.offsetHeight > list.clientHeight) {
+        list.scrollTop += offset;
+      }
+    };
+
+    const timeoutId = window.setTimeout(scrollToExpandedBet, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [expandedBetId, expanded]);
+
+  useEffect(() => {
     const list = betsListRef.current;
     if (!expanded || !list) return;
 
@@ -64,7 +101,7 @@ export function RoundItemV2({
       list.removeEventListener('scroll', handleScroll);
       resizeObserver.disconnect();
     };
-  }, [expanded, round.bets, updateBetsScrollState]);
+  }, [expanded, expandedBetId, round.bets, updateBetsScrollState]);
 
   const showBetsFadeBottom = betsScrollState.hasOverflow && !betsScrollState.atBottom;
 
@@ -168,7 +205,15 @@ export function RoundItemV2({
                 <div className={styles.betsScrollArea}>
                   <div ref={betsListRef} className={styles.betsList} data-bets-scroll="">
                     {round.bets?.map((bet) => (
-                      <BetRow key={bet.id} bet={bet} />
+                      <BetRowV3
+                        key={bet.id}
+                        bet={bet}
+                        variant="panel"
+                        expanded={expandedBetId === bet.id}
+                        onToggleExpand={() =>
+                          setExpandedBetId((current) => (current === bet.id ? null : bet.id))
+                        }
+                      />
                     ))}
                   </div>
                   <div

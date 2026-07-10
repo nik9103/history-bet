@@ -32,6 +32,14 @@
   overflow: hidden;
 }
 
+.variantScreen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
 .content {
   position: relative;
   flex: 1;
@@ -40,11 +48,16 @@
   overflow: hidden;
 }
 
+.contentWithBottomTabs {
+  padding-bottom: 0;
+}
+
 .matches {
   display: flex;
   flex-direction: column;
   gap: 4px;
   height: 100%;
+  padding-bottom: 60px;
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
@@ -78,6 +91,11 @@
 .fadeBottom {
   bottom: 24px;
   background: linear-gradient(0deg, var(--bg-screen) 0%, rgba(25, 30, 40, 0) 100%);
+}
+
+.fadeBottomWithTabs {
+  bottom: 0;
+  height: 72px;
 }
 
 .fadeHidden {

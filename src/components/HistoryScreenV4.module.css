@@ -10,12 +10,8 @@
   position: relative;
   flex: 1;
   min-height: 0;
-  padding: 0 16px 24px;
+  padding: 8px 16px 0;
   overflow: hidden;
-}
-
-.contentMatch {
-  padding-top: 12px;
 }
 
 .contentWithBottomTabs {
@@ -25,18 +21,13 @@
 .list {
   display: flex;
   flex-direction: column;
+  gap: 8px;
   height: 100%;
   padding-bottom: 60px;
   overflow-y: auto;
   overflow-x: hidden;
-  scroll-behavior: smooth;
   overscroll-behavior-y: auto;
   scrollbar-width: none;
-}
-
-.listMatch {
-  gap: 0px;
-  padding-bottom: 0;
 }
 
 .list::-webkit-scrollbar {
@@ -59,13 +50,9 @@
 }
 
 .fadeBottom {
-  bottom: 24px;
-  background: linear-gradient(0deg, var(--bg-screen) 0%, rgba(25, 30, 40, 0) 100%);
-}
-
-.fadeBottomWithTabs {
   bottom: 0;
   height: 72px;
+  background: linear-gradient(0deg, var(--bg-screen) 0%, rgba(25, 30, 40, 0) 100%);
 }
 
 .fadeHidden {

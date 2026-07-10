@@ -585,6 +585,27 @@ export type MatchRoundGroup = {
 
 const MATCH_DATE_LABELS = ['today', 'Yesterday', '2 days ago'];
 
+export function getParticipatedMatches(): MatchItem[] {
+  return matches.filter((match) => match.summary !== null);
+}
+
+export function getBetHistoryMatches(): MatchItem[] {
+  return getParticipatedMatches()
+    .map((match) => ({
+      ...match,
+      rounds: match.rounds.filter(isBetHistoryRound),
+    }))
+    .filter((match) => match.rounds.length > 0);
+}
+
+export function getResultHistoryRoundGroups(): MatchRoundGroup[] {
+  return matches.map((match, index) => ({
+    match,
+    dateLabel: MATCH_DATE_LABELS[index] ?? match.date,
+    rounds: match.rounds,
+  }));
+}
+
 export function getParticipatedRoundGroups(): MatchRoundGroup[] {
   return matches
     .filter((match) => match.summary !== null)

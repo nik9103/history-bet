@@ -19,6 +19,11 @@
   border-radius: 8px;
 }
 
+.headerHoveredPanel {
+  background: var(--bg-screen);
+  border-radius: 8px;
+}
+
 .left {
   display: flex;
   flex: 1;

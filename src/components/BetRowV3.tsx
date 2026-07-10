@@ -10,9 +10,15 @@ type BetRowV3Props = {
   bet: BetItem;
   expanded: boolean;
   onToggleExpand: () => void;
+  variant?: 'default' | 'panel';
 };
 
-export function BetRowV3({ bet, expanded, onToggleExpand }: BetRowV3Props) {
+export function BetRowV3({
+  bet,
+  expanded,
+  onToggleExpand,
+  variant = 'default',
+}: BetRowV3Props) {
   const [hovered, setHovered] = useState(false);
   const positive = bet.amount.startsWith('+');
   const sections = getBetReceiptSections(bet);
@@ -21,7 +27,13 @@ export function BetRowV3({ bet, expanded, onToggleExpand }: BetRowV3Props) {
     <div className={styles.wrap} data-bet-id={bet.id}>
       <button
         type="button"
-        className={`${styles.header} ${hovered && !expanded ? styles.headerHovered : ''}`}
+        className={`${styles.header} ${
+          hovered && !expanded
+            ? variant === 'panel'
+              ? styles.headerHoveredPanel
+              : styles.headerHovered
+            : ''
+        }`}
         onClick={onToggleExpand}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
