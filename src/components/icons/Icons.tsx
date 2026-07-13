@@ -1,3 +1,6 @@
+import circleCheckIcon from '../../assets/icons/circle-check.png';
+import rotateCcwSquareIcon from '../../assets/icons/rotate-ccw-square.png';
+
 export function CalendarIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -145,4 +148,48 @@ export function SpinnerIcon({ className }: SpinnerIconProps) {
       </g>
     </svg>
   );
+}
+
+type FilterIconProps = {
+  type: 'all' | 'settled' | 'unsettled' | 'refund';
+  className?: string;
+};
+
+function FilterIconMask({ src, className }: { src: string; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={className}
+      style={{
+        WebkitMaskImage: `url(${src})`,
+        maskImage: `url(${src})`,
+      }}
+    />
+  );
+}
+
+export function FilterIcon({ type, className }: FilterIconProps) {
+  if (type === 'all') {
+    return (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+        <path d="M8.55333 1.45333C8.20333 1.27333 7.79667 1.27333 7.44667 1.45333L1.73333 4.05333C1.32667 4.26 1.32667 4.74 1.73333 4.94667L7.44667 7.54667C7.79667 7.72667 8.20333 7.72667 8.55333 7.54667L14.2667 4.94667C14.6733 4.74 14.6733 4.26 14.2667 4.05333L8.55333 1.45333Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M14.6667 8.43333L8.55333 11.0333C8.20333 11.2133 7.79667 11.2133 7.44667 11.0333L1.33333 8.43333" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M14.6667 11.7667L8.55333 14.3667C8.20333 14.5467 7.79667 14.5467 7.44667 14.3667L1.33333 11.7667" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    );
+  }
+
+  if (type === 'unsettled') {
+    return (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+        <circle cx="8" cy="8" r="6.4" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2.8 2.2" strokeLinecap="round"/>
+      </svg>
+    );
+  }
+
+  if (type === 'refund') {
+    return <FilterIconMask src={rotateCcwSquareIcon} className={className} />;
+  }
+
+  return <FilterIconMask src={circleCheckIcon} className={className} />;
 }

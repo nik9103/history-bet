@@ -34,6 +34,10 @@
   display: none;
 }
 
+.listEmpty {
+  justify-content: center;
+}
+
 .fadeTop,
 .fadeBottom {
   position: absolute;

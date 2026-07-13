@@ -16,7 +16,7 @@ export function MatchGroupV4({
   match,
   dateLabel,
   rounds,
-  firstVisibleRoundId,
+  firstVisibleRoundId: _firstVisibleRoundId,
   expandedRoundId,
   onToggleRound,
   onViewReceipt,
@@ -32,7 +32,7 @@ export function MatchGroupV4({
           <RoundItemV2
             key={round.id}
             round={round}
-            hideTopLine={round.id === firstVisibleRoundId}
+            hideTopLine={index === 0}
             hideBottomLine={index === rounds.length - 1}
             expanded={expandedRoundId === round.id}
             onToggleExpand={() => onToggleRound(round.id)}

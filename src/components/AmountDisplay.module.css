@@ -26,6 +26,10 @@
   color: var(--text-tertiary);
 }
 
+.refund {
+  color: var(--color-refund);
+}
+
 .subtitle {
   font-size: var(--caption-m);
   line-height: var(--caption-m-lh);

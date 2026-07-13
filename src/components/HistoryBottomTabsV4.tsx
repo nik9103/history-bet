@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { BetFilter } from '../data/historyData';
-import { ChevronIcon } from './icons/Icons';
+import { ChevronIcon, FilterIcon } from './icons/Icons';
 import styles from './HistoryBottomTabsV4.module.css';
 
 export type HistoryBottomTab = 'bet' | 'result';
@@ -19,11 +19,28 @@ type ThumbStyle = {
   left: number;
 };
 
-const FILTER_OPTIONS: { id: BetFilter; label: string; color: string }[] = [
-  { id: 'all', label: 'All', color: 'var(--text-tertiary)' },
-  { id: 'won', label: 'Won bets', color: 'var(--color-lime-400)' },
-  { id: 'lost', label: 'Lost bets', color: 'var(--color-red-500)' },
+type FilterIconType = 'all' | 'settled' | 'unsettled' | 'refund';
+
+type FilterOption = {
+  id: BetFilter;
+  label: string;
+  icon: FilterIconType;
+};
+
+const FILTER_OPTIONS: FilterOption[] = [
+  { id: 'all', label: 'All', icon: 'all' },
+  { id: 'settled', label: 'Settled', icon: 'settled' },
+  { id: 'unsettled', label: 'Unsettled', icon: 'unsettled' },
+  { id: 'refund', label: 'Refund', icon: 'refund' },
 ];
+
+function FilterIndicator({ option }: { option: FilterOption }) {
+  return (
+    <span className={styles.filterIcon} aria-hidden="true">
+      <FilterIcon type={option.icon} />
+    </span>
+  );
+}
 
 export function HistoryBottomTabsV4({
   activeTab,
@@ -59,9 +76,22 @@ export function HistoryBottomTabsV4({
       }
     };
 
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
+    // Defer so the opening click doesn't immediately close the menu.
+    const timeoutId = window.setTimeout(() => {
+      document.addEventListener('mousedown', handlePointerDown);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handlePointerDown);
+    };
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (activeTab !== 'bet') {
+      setMenuOpen(false);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (filterDisabled) {
@@ -70,7 +100,7 @@ export function HistoryBottomTabsV4({
   }, [filterDisabled]);
 
   const handleFilterClick = () => {
-    if (filterDisabled) return;
+    if (activeTab !== 'bet') return;
     setMenuOpen((open) => !open);
   };
 
@@ -110,26 +140,29 @@ export function HistoryBottomTabsV4({
           </button>
         </div>
 
-        <div className={styles.separator} aria-hidden="true" />
-
         <div
           ref={filterRef}
-          className={`${styles.filterWrap} ${filterDisabled ? styles.filterDisabled : ''}`}
+          className={`${styles.filterSection} ${activeTab === 'bet' ? styles.filterSectionVisible : ''} ${menuOpen ? styles.filterSectionMenuOpen : ''}`}
         >
-          <button
-            type="button"
-            className={styles.filter}
-            onClick={handleFilterClick}
-            aria-haspopup="listbox"
-            aria-expanded={menuOpen}
-            disabled={filterDisabled}
-          >
-            <span className={styles.filterDot} style={{ background: activeFilter.color }} />
-            <span className={styles.filterLabel}>{activeFilter.label}</span>
-            <span className={`${styles.filterArrow} ${menuOpen ? styles.filterArrowOpen : ''}`}>
-              <ChevronIcon direction="down" />
-            </span>
-          </button>
+          <div className={styles.filterSectionClip}>
+            <div className={styles.separator} aria-hidden="true" />
+
+            <div className={styles.filterWrap}>
+              <button
+                type="button"
+                className={styles.filter}
+                onClick={handleFilterClick}
+                aria-haspopup="listbox"
+                aria-expanded={menuOpen}
+              >
+                <FilterIndicator option={activeFilter} />
+                <span className={styles.filterLabel}>{activeFilter.label}</span>
+                <span className={`${styles.filterArrow} ${menuOpen ? styles.filterArrowOpen : ''}`}>
+                  <ChevronIcon direction="down" />
+                </span>
+              </button>
+            </div>
+          </div>
 
           <div className={`${styles.menu} ${menuOpen ? styles.menuOpen : ''}`} role="listbox">
             {FILTER_OPTIONS.map((option) => (
@@ -141,7 +174,7 @@ export function HistoryBottomTabsV4({
                 className={styles.menuItem}
                 onClick={() => handleFilterSelect(option.id)}
               >
-                <span className={styles.menuDot} style={{ background: option.color }} />
+                <FilterIndicator option={option} />
                 {option.label}
               </button>
             ))}

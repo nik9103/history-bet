@@ -41,8 +41,8 @@
 }
 
 .title {
-  font-size: var(--body-s);
-  line-height: var(--body-s-lh);
+  font-size: var(--caption-l);
+  line-height: var(--caption-l-lh);
   color: var(--text-primary);
   white-space: nowrap;
 }

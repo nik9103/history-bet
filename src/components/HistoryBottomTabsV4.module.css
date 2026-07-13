@@ -29,6 +29,7 @@
   background: var(--bg-tertiary);
   box-shadow: inset 0 0 0 0.5px var(--border-default);
   pointer-events: auto;
+  transition: width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .tabs {
@@ -81,10 +82,66 @@
 .separator {
   width: 1px;
   height: 16px;
-  margin-left: 12px;
   margin-right: 12px;
   background: rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
+  opacity: 0;
+  transform: scaleY(0.6);
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.filterSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 0;
+  pointer-events: none;
+  overflow: visible;
+  transition: margin-left 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.filterSectionVisible {
+  margin-left: 12px;
+  pointer-events: auto;
+}
+
+.filterSectionVisible .separator {
+  opacity: 1;
+  transform: scaleY(1);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.12s,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+}
+
+.filterSectionMenuOpen {
+  overflow: visible;
+}
+
+.filterSectionClip {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    max-width 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.1s,
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+}
+
+.filterSectionVisible .filterSectionClip {
+  max-width: 120px;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    max-width 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s,
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .filterWrap {
@@ -112,12 +169,30 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-.filterDot,
-.menuDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.filterIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  line-height: 0;
+  color: var(--text-tertiary);
+}
+
+.filterIcon svg,
+.filterIcon span {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.filterIcon span {
+  background: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 .filterLabel {
@@ -142,16 +217,12 @@
   transform: rotate(180deg);
 }
 
-.filterDisabled {
-  opacity: 0.35;
-  pointer-events: none;
-}
-
 .menu {
   position: absolute;
   right: 0;
   bottom: calc(100% + 8px);
-  width: 170px;
+  width: 220px;
+  padding: 4px;
   background: var(--bg-tertiary);
   border-radius: 12px;
   overflow: hidden;
@@ -165,7 +236,7 @@
     visibility 0.22s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   border: 0.5px solid var(--border-default);
-  z-index: 3;
+  z-index: 10;
 }
 
 .menuOpen {
@@ -177,10 +248,11 @@
 
 .menuItem {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
   gap: 10px;
+  border-radius: var(--radius-button);
   font-size: var(--caption-l);
   line-height: var(--caption-l-lh);
   font-weight: 500;

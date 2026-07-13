@@ -2,10 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   filterBetHistoryRoundGroups,
   getBetHistoryRoundGroups,
+  getHistoryEmptyStateContent,
   getResultHistoryRoundGroups,
   type BetFilter,
 } from '../data/historyData';
 import { HistoryBottomTabsV4, type HistoryBottomTab } from './HistoryBottomTabsV4';
+import { HistoryEmptyState } from './HistoryEmptyState';
 import { HistoryHeader } from './HistoryHeader';
 import { MatchGroupV4 } from './MatchGroupV4';
 import { ViewReceipt } from './ViewReceipt';
@@ -197,24 +199,30 @@ export function HistoryScreenV4() {
 
   const showFadeTop = fadeEnabled && !scrollState.atTop;
   const showFadeBottom = fadeEnabled && !scrollState.atBottom;
+  const isEmpty = roundGroups.length === 0;
+  const emptyState = getHistoryEmptyStateContent(historyTab, betFilter);
 
   return (
     <div className={styles.screen}>
       <HistoryHeader onClose={() => undefined} />
       <div className={`${styles.content} ${styles.contentWithBottomTabs}`}>
-        <div ref={listRef} className={styles.list}>
-          {roundGroups.map((group) => (
-            <MatchGroupV4
-              key={group.match.id}
-              match={group.match}
-              dateLabel={group.dateLabel}
-              rounds={group.rounds}
-              firstVisibleRoundId={scrollState.firstVisibleRoundId}
-              expandedRoundId={expandedRoundId}
-              onToggleRound={handleToggleRound}
-              onViewReceipt={() => setView('receipt')}
-            />
-          ))}
+        <div ref={listRef} className={`${styles.list} ${isEmpty ? styles.listEmpty : ''}`}>
+          {isEmpty ? (
+            <HistoryEmptyState title={emptyState.title} description={emptyState.description} />
+          ) : (
+            roundGroups.map((group) => (
+              <MatchGroupV4
+                key={group.match.id}
+                match={group.match}
+                dateLabel={group.dateLabel}
+                rounds={group.rounds}
+                firstVisibleRoundId={scrollState.firstVisibleRoundId}
+                expandedRoundId={expandedRoundId}
+                onToggleRound={handleToggleRound}
+                onViewReceipt={() => setView('receipt')}
+              />
+            ))
+          )}
         </div>
         <div
           className={`${styles.fadeTop} ${showFadeTop ? '' : styles.fadeHidden}`}

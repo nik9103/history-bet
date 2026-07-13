@@ -1,10 +1,13 @@
 export type BetResult = 'guess' | 'loss';
+export type BetSettlementStatus = 'settled' | 'unsettled' | 'refund';
+export type AmountVariant = 'positive' | 'negative' | 'refund';
 
 export type BetItem = {
   id: string;
   title: string;
   multiplier: string;
   result: BetResult;
+  settlement: BetSettlementStatus;
   amount: string;
   stake: string;
   icon: 'blue' | 'red-5' | 'draw';
@@ -20,6 +23,7 @@ export type RoundItem = {
   waiting?: boolean;
   amount?: string;
   amountPositive?: boolean;
+  amountVariant?: AmountVariant;
   subtitle?: string;
   bets?: BetItem[];
   guessedCount?: string;
@@ -104,9 +108,79 @@ function formatTime(rng: () => number, hour: number): string {
   return `${pad(hour)}:${pad(minute)}-${pad(hour)}:${pad(endMinute)}`;
 }
 
+function parseSignedAmount(amount: string): number {
+  const match = amount.match(/([+-])€([\d.]+)/);
+  if (!match) return 0;
+  const value = Number(match[2]);
+  return match[1] === '+' ? value : -value;
+}
+
+function shuffleInPlace<T>(items: T[], rng: () => number) {
+  for (let index = items.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(rng() * (index + 1));
+    [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+  }
+}
+
+function pickSettlementStatus(rng: () => number): BetSettlementStatus {
+  const value = rng();
+  if (value < 0.14) return 'refund';
+  if (value < 0.28) return 'unsettled';
+  return 'settled';
+}
+
+function buildSettlementPlan(count: number, rng: () => number): BetSettlementStatus[] {
+  const plan = Array.from({ length: count }, () => pickSettlementStatus(rng));
+  const settledCount = plan.filter((status) => status === 'settled').length;
+
+  if (count > 1 && settledCount === 0) {
+    plan[0] = 'settled';
+  }
+
+  shuffleInPlace(plan, rng);
+  return plan;
+}
+
+function computeRoundSummary(bets: BetItem[]) {
+  const refundBets = bets.filter((bet) => bet.settlement === 'refund');
+  const settledBets = bets.filter((bet) => bet.settlement === 'settled');
+  const refundCount = refundBets.length;
+  const settledCount = settledBets.length;
+  const guessed = settledBets.filter((bet) => bet.result === 'guess').length;
+
+  if (refundCount > 0 && settledCount === 0) {
+    const totalRefund = refundBets.reduce(
+      (sum, bet) => sum + Math.max(0, parseSignedAmount(bet.amount)),
+      0,
+    );
+
+    return {
+      amount: formatAmount(totalRefund, true),
+      amountPositive: true,
+      amountVariant: 'refund' as const,
+      subtitle: `Refund ${refundCount}`,
+    };
+  }
+
+  const net = settledBets.reduce((sum, bet) => sum + parseSignedAmount(bet.amount), 0);
+  let subtitle = `Guessed ${guessed} of ${settledCount}`;
+
+  if (refundCount > 0) {
+    subtitle += ` · Refund ${refundCount}`;
+  }
+
+  return {
+    amount: formatAmount(Math.abs(net), net >= 0),
+    amountPositive: net >= 0,
+    amountVariant: (net > 0 ? 'positive' : 'negative') as AmountVariant,
+    subtitle,
+  };
+}
+
 function createBet(
   roundId: string,
   index: number,
+  settlement: BetSettlementStatus,
   isGuess: boolean,
   value: number,
   rng: () => number,
@@ -114,11 +188,25 @@ function createBet(
   const template = pick(rng, BET_TEMPLATES);
   const stake = pick(rng, STAKES);
 
+  if (settlement === 'refund') {
+    return {
+      id: `${roundId}-bet-${index + 1}`,
+      title: template.title,
+      multiplier: template.multiplier,
+      result: 'guess',
+      settlement: 'refund',
+      amount: formatAmount(stake, true),
+      stake: `of €${stake}`,
+      icon: template.icon,
+    };
+  }
+
   return {
     id: `${roundId}-bet-${index + 1}`,
     title: template.title,
     multiplier: template.multiplier,
     result: isGuess ? 'guess' : 'loss',
+    settlement,
     amount: formatAmount(value, isGuess),
     stake: `of €${stake}`,
     icon: template.icon,
@@ -168,12 +256,12 @@ function createBetsFromSummary(roundId: string, summary: MatchSummary, seed: num
   let index = 0;
 
   for (const amount of winAmounts) {
-    bets.push(createBet(roundId, index, true, amount, rng));
+    bets.push(createBet(roundId, index, 'settled', true, amount, rng));
     index += 1;
   }
 
   for (const amount of lossAmounts) {
-    bets.push(createBet(roundId, index, false, amount, rng));
+    bets.push(createBet(roundId, index, 'settled', false, amount, rng));
     index += 1;
   }
 
@@ -182,25 +270,22 @@ function createBetsFromSummary(roundId: string, summary: MatchSummary, seed: num
 
 function applyRoundBets(round: RoundItem, bets: BetItem[], seed: number): RoundItem {
   const rng = createRng(seed);
-  const guessed = bets.filter((bet) => bet.result === 'guess').length;
+  const summary = computeRoundSummary(bets);
+  const settledBets = bets.filter((bet) => bet.settlement === 'settled');
+  const guessed = settledBets.filter((bet) => bet.result === 'guess').length;
   const totalStake = bets.reduce((sum, bet) => {
     const match = bet.stake.match(/€(\d+)/);
     return sum + (match ? Number(match[1]) : 0);
   }, 0);
-  const net = bets.reduce((sum, bet) => {
-    const match = bet.amount.match(/([+-])€([\d.]+)/);
-    if (!match) return sum;
-    const value = Number(match[2]);
-    return sum + (match[1] === '+' ? value : -value);
-  }, 0);
-  const amountPositive = net >= 0;
+  const net = settledBets.reduce((sum, bet) => sum + parseSignedAmount(bet.amount), 0);
 
   return {
     ...round,
-    amount: formatAmount(Math.abs(net), amountPositive),
-    amountPositive,
-    subtitle: `Guessed ${guessed} of ${bets.length}`,
-    guessedCount: `${guessed}/${bets.length} bets guessed`,
+    amount: summary.amount,
+    amountPositive: summary.amountPositive,
+    amountVariant: summary.amountVariant,
+    subtitle: summary.subtitle,
+    guessedCount: `${guessed}/${settledBets.length} bets guessed`,
     balance: `Balance ${formatAmount(Math.abs(totalStake * 0.35 + rng() * 80), net >= 0)}`,
     bets,
   };
@@ -239,26 +324,48 @@ function buildMatchSummary(rounds: RoundItem[]): MatchSummary | null {
 
 function createBets(roundId: string, count: number, seed: number): BetItem[] {
   const rng = createRng(seed);
+  const settlementPlan = buildSettlementPlan(count, rng);
+  const settledCount = settlementPlan.filter((status) => status === 'settled').length;
+  const guessedCount = Math.max(0, Math.min(settledCount, Math.round(settledCount * (0.35 + rng() * 0.45))));
+  const lossCount = settledCount - guessedCount;
+  const baseStake = 50;
+  const winTotal = guessedCount > 0 ? baseStake * guessedCount * (1.2 + rng() * 0.8) : 0;
+  const lossTotal = lossCount > 0 ? baseStake * lossCount * (0.8 + rng() * 0.4) : 0;
+  const winAmounts = splitAmount(Math.round(winTotal), guessedCount);
+  const lossAmounts = splitAmount(Math.round(lossTotal), lossCount);
   const bets: BetItem[] = [];
+  let winIndex = 0;
+  let lossIndex = 0;
 
-  for (let i = 0; i < count; i += 1) {
-    const template = pick(rng, BET_TEMPLATES);
-    const stake = pick(rng, STAKES);
-    const isGuess = rng() > 0.42;
-    const multiplierValue = Number.parseFloat(template.multiplier.slice(1).replace(',', '.'));
-    const payout = Math.round(stake * multiplierValue);
-    const lossAmount = Math.round(stake * (0.8 + rng() * 0.4));
+  settlementPlan.forEach((settlement, index) => {
+    if (settlement === 'refund') {
+      bets.push(createBet(roundId, index, 'refund', false, 0, rng));
+      return;
+    }
 
-    bets.push({
-      id: `${roundId}-bet-${i + 1}`,
-      title: template.title,
-      multiplier: template.multiplier,
-      result: isGuess ? 'guess' : 'loss',
-      amount: isGuess ? formatAmount(payout, true) : formatAmount(lossAmount, false),
-      stake: `of €${stake}`,
-      icon: template.icon,
-    });
-  }
+    if (settlement === 'unsettled') {
+      const isGuess = rng() > 0.42;
+      const stake = pick(rng, STAKES);
+      const multiplierValue = Number.parseFloat(
+        pick(rng, BET_TEMPLATES).multiplier.slice(1).replace(',', '.'),
+      );
+      const value = isGuess
+        ? Math.round(stake * multiplierValue)
+        : Math.round(stake * (0.8 + rng() * 0.4));
+
+      bets.push(createBet(roundId, index, 'unsettled', isGuess, value, rng));
+      return;
+    }
+
+    if (winIndex < winAmounts.length) {
+      bets.push(createBet(roundId, index, 'settled', true, winAmounts[winIndex], rng));
+      winIndex += 1;
+      return;
+    }
+
+    bets.push(createBet(roundId, index, 'settled', false, lossAmounts[lossIndex] ?? baseStake, rng));
+    lossIndex += 1;
+  });
 
   return bets;
 }
@@ -474,6 +581,61 @@ function applyRoundBetProfiles(
   });
 }
 
+function applyRoundRefundScenario(
+  round: RoundItem,
+  scenario: 'partial-win' | 'partial-loss' | 'full-refund',
+  refundCount: number,
+  seed: number,
+): RoundItem {
+  if (round.loading || round.waiting) return round;
+
+  const rng = createRng(seed);
+
+  if (scenario === 'full-refund') {
+    const refundBets = Array.from({ length: refundCount }, (_, index) =>
+      createBet(round.id, index, 'refund', false, 0, rng),
+    );
+    return applyRoundBets(round, refundBets, seed);
+  }
+
+  const settledBets = (round.bets ?? []).filter((bet) => bet.settlement === 'settled');
+  if (!settledBets.length) return round;
+
+  const refundBets = Array.from({ length: refundCount }, (_, index) =>
+    createBet(round.id, settledBets.length + index, 'refund', false, 0, rng),
+  );
+
+  return applyRoundBets(round, [...settledBets, ...refundBets], seed);
+}
+
+function injectRefundDemoRounds(match: MatchItem): MatchItem {
+  const refundRoundNumbers: Record<number, { scenario: 'partial-win' | 'partial-loss' | 'full-refund'; refundCount: number }> = {
+    21: { scenario: 'partial-win', refundCount: 2 },
+    20: { scenario: 'partial-loss', refundCount: 2 },
+    17: { scenario: 'full-refund', refundCount: 1 },
+    16: { scenario: 'partial-win', refundCount: 1 },
+    12: { scenario: 'full-refund', refundCount: 2 },
+  };
+
+  const rounds = match.rounds.map((round) => {
+    const demo = refundRoundNumbers[round.number];
+    if (!demo || !round.bets?.length) return round;
+
+    return applyRoundRefundScenario(
+      round,
+      demo.scenario,
+      demo.refundCount,
+      Number.parseInt(match.id.replace(/\D/g, ''), 10) * 100 + round.number,
+    );
+  });
+
+  return {
+    ...match,
+    rounds,
+    summary: match.summary ? buildMatchSummary(rounds) : null,
+  };
+}
+
 function createMatch(
   number: number,
   date: string,
@@ -532,31 +694,37 @@ export type ReceiptBet = {
 };
 
 export const matches: MatchItem[] = [
-  createMatch(24, '12 Jan', '1234567', 22, {
-    active: true,
-    participated: true,
-    summary: { amount: '+€110', amountPositive: true, subtitle: 'Guessed 7 of 8' },
-    roundBets: [
-      { roundNumber: 21, guessed: 11, total: 15, net: 420 },
-      { roundNumber: 20, guessed: 1, total: 2, net: -30 },
-      { roundNumber: 17, guessed: 9, total: 14, net: 310 },
-      { roundNumber: 15, guessed: 2, total: 2, net: 40 },
-    ],
-  }),
-  createMatch(23, '11 Jan', '1234566', 21, {
-    participated: true,
-    summary: { amount: '-€243', amountPositive: false, subtitle: 'Guessed 2 of 6' },
-    roundBets: [
-      { roundNumber: 19, guessed: 1, total: 2, net: -90 },
-      { roundNumber: 16, guessed: 0, total: 2, net: -80 },
-      { roundNumber: 12, guessed: 1, total: 2, net: -73 },
-    ],
-  }),
+  injectRefundDemoRounds(
+    createMatch(24, '12 Jan', '1234567', 22, {
+      active: true,
+      participated: true,
+      summary: { amount: '+€110', amountPositive: true, subtitle: 'Guessed 7 of 8' },
+      roundBets: [
+        { roundNumber: 21, guessed: 11, total: 15, net: 420 },
+        { roundNumber: 20, guessed: 1, total: 2, net: -30 },
+        { roundNumber: 17, guessed: 9, total: 14, net: 310 },
+        { roundNumber: 15, guessed: 2, total: 2, net: 40 },
+      ],
+    }),
+  ),
+  injectRefundDemoRounds(
+    createMatch(23, '11 Jan', '1234566', 21, {
+      participated: true,
+      summary: { amount: '-€243', amountPositive: false, subtitle: 'Guessed 2 of 6' },
+      roundBets: [
+        { roundNumber: 19, guessed: 1, total: 2, net: -90 },
+        { roundNumber: 16, guessed: 0, total: 2, net: -80 },
+        { roundNumber: 12, guessed: 1, total: 2, net: -73 },
+      ],
+    }),
+  ),
   createMatch(22, '10 Jan', '1234565', 18, { participated: false }),
-  createMatch(21, '9 Jan', '1234564', 16, {
-    participated: true,
-    summary: { amount: '+€87', amountPositive: true, subtitle: 'Guessed 5 of 9' },
-  }),
+  injectRefundDemoRounds(
+    createMatch(21, '9 Jan', '1234564', 16, {
+      participated: true,
+      summary: { amount: '+€87', amountPositive: true, subtitle: 'Guessed 5 of 9' },
+    }),
+  ),
   createMatch(20, '8 Jan', '1234563', 14, {
     participated: true,
     summary: { amount: '-€56', amountPositive: false, subtitle: 'Guessed 1 of 4' },
@@ -629,12 +797,48 @@ export function getBetHistoryRoundGroups(): MatchRoundGroup[] {
     .filter((group) => group.rounds.length > 0);
 }
 
-export type BetFilter = 'all' | 'won' | 'lost';
+export type BetFilter = 'all' | 'settled' | 'unsettled' | 'refund';
+
+export type HistoryEmptyTab = 'bet' | 'result';
+
+export function getHistoryEmptyStateContent(
+  historyTab: HistoryEmptyTab,
+  betFilter: BetFilter = 'all',
+): { title: string; description: string } {
+  if (historyTab === 'result') {
+    return {
+      title: 'No results',
+      description: 'Completed rounds will appear here after you join a match',
+    };
+  }
+
+  switch (betFilter) {
+    case 'settled':
+      return {
+        title: 'No settled bets',
+        description: 'There are no settled bets matching this filter',
+      };
+    case 'unsettled':
+      return {
+        title: 'No unsettled bets',
+        description: 'All bets in your history are already settled or refunded',
+      };
+    case 'refund':
+      return {
+        title: 'No refunds',
+        description: 'Refund rounds will appear here when a bet is returned',
+      };
+    default:
+      return {
+        title: 'No bets',
+        description: 'Your betting history will appear here after you place your first bet',
+      };
+  }
+}
 
 function matchesBetFilter(bet: BetItem, filter: BetFilter): boolean {
   if (filter === 'all') return true;
-  if (filter === 'won') return bet.result === 'guess';
-  return bet.result === 'loss';
+  return bet.settlement === filter;
 }
 
 export function filterBetHistoryRoundGroups(
@@ -646,14 +850,37 @@ export function filterBetHistoryRoundGroups(
   return groups
     .map((group) => ({
       ...group,
-      rounds: group.rounds
-        .map((round) => ({
-          ...round,
-          bets: round.bets?.filter((bet) => matchesBetFilter(bet, filter)),
-        }))
-        .filter((round) => isBetHistoryRound(round)),
+      rounds: group.rounds.flatMap((round) => {
+        const filteredBets = round.bets?.filter((bet) => matchesBetFilter(bet, filter));
+        if (!filteredBets?.length || !isBetHistoryRound({ ...round, bets: filteredBets })) {
+          return [];
+        }
+
+        const summary = computeRoundSummary(filteredBets);
+
+        return [
+          {
+            ...round,
+            amount: summary.amount,
+            amountPositive: summary.amountPositive,
+            amountVariant: summary.amountVariant,
+            subtitle: summary.subtitle,
+            bets: filteredBets,
+          },
+        ];
+      }),
     }))
     .filter((group) => group.rounds.length > 0);
+}
+
+export function getBetAmountVariant(bet: BetItem): AmountVariant {
+  if (bet.settlement === 'refund') return 'refund';
+  return bet.amount.startsWith('+') ? 'positive' : 'negative';
+}
+
+export function resolveRoundAmountVariant(round: RoundItem): AmountVariant {
+  if (round.amountVariant) return round.amountVariant;
+  return round.amountPositive ? 'positive' : 'negative';
 }
 
 export function findRoundInMatches(matchId: string, roundId: string) {
@@ -676,7 +903,7 @@ export function getBetReceiptSections(bet: BetItem) {
     [
       { label: 'Bet ID', value: 'jfk473jsyeK' },
       { label: 'Bet status', value: 'Conducted' },
-      { label: 'Result', value: bet.result === 'guess' ? 'Guess' : 'Loss' },
+      { label: 'Result', value: bet.settlement === 'refund' ? 'Refund' : bet.result === 'guess' ? 'Guess' : 'Loss' },
     ],
     [
       { label: 'Bet sum', value: stakeValue.replace('€', '€') },

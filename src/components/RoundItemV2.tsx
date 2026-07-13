@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RoundItem as RoundItemType } from '../data/historyData';
+import { resolveRoundAmountVariant } from '../data/historyData';
 import { BetRowV3 } from './BetRowV3';
 import { TimelineMarker } from './TimelineMarker';
 import { MarketIcon } from './icons/MarketIcon';
@@ -162,7 +163,7 @@ export function RoundItemV2({
                 amount={round.amount}
                 subtitle={round.subtitle}
                 positive={round.amountPositive}
-                amountSize="caption"
+                variant={resolveRoundAmountVariant(round)}
               />
             )}
             {isExpandable && (

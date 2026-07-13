@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  filterBetHistoryRoundGroups,
   findRoundInMatches,
   formatThrowDetailSubtitle,
   formatThrowDetailTitle,
   getBetHistoryRoundGroups,
+  getHistoryEmptyStateContent,
   getParticipatedRoundGroups,
+  type BetFilter,
   type MatchItem,
   type RoundItem,
 } from '../data/historyData';
 import { BetRowV3 } from './BetRowV3';
-import { HistoryBottomTabs, type HistoryBottomTab } from './HistoryBottomTabs';
+import { HistoryBottomTabsV4, type HistoryBottomTab } from './HistoryBottomTabsV4';
+import { HistoryEmptyState } from './HistoryEmptyState';
 import { HistoryHeader } from './HistoryHeader';
 import { MatchGroupV3 } from './MatchGroupV3';
 import { ViewReceipt } from './ViewReceipt';
@@ -88,6 +92,7 @@ type SelectedRound = {
 export function HistoryScreenV3() {
   const [view, setView] = useState<View>('list');
   const [historyTab, setHistoryTab] = useState<HistoryBottomTab>('bet');
+  const [betFilter, setBetFilter] = useState<BetFilter>('all');
   const [selectedRound, setSelectedRound] = useState<SelectedRound | null>(null);
   const [expandedBetId, setExpandedBetId] = useState<string | null>(null);
   const [scrollState, setScrollState] = useState<ScrollState>({
@@ -102,8 +107,23 @@ export function HistoryScreenV3() {
   const scrollRafRef = useRef(0);
 
   const roundGroups =
-    historyTab === 'bet' ? getBetHistoryRoundGroups() : getParticipatedRoundGroups();
+    historyTab === 'bet'
+      ? filterBetHistoryRoundGroups(getBetHistoryRoundGroups(), betFilter)
+      : getParticipatedRoundGroups();
   const trackRounds = view === 'list';
+
+  const handleHistoryTabChange = (tab: HistoryBottomTab) => {
+    setHistoryTab(tab);
+    setSelectedRound(null);
+    setExpandedBetId(null);
+    setView('list');
+  };
+
+  const handleBetFilterChange = (filter: BetFilter) => {
+    setBetFilter(filter);
+    setSelectedRound(null);
+    setExpandedBetId(null);
+  };
 
   const updateScrollState = useCallback(() => {
     const container = listRef.current;
@@ -113,7 +133,7 @@ export function HistoryScreenV3() {
 
   useEffect(() => {
     setFadeEnabled(false);
-  }, [expandedBetId, selectedRound, view, historyTab]);
+  }, [expandedBetId, selectedRound, view, historyTab, betFilter]);
 
   useEffect(() => {
     if (!expandedBetId || !listRef.current || view !== 'throw') return;
@@ -197,7 +217,7 @@ export function HistoryScreenV3() {
       container.removeEventListener('scroll', handleScroll);
       resizeObserver.disconnect();
     };
-  }, [view, selectedRound, expandedBetId, historyTab, updateScrollState]);
+  }, [view, selectedRound, expandedBetId, historyTab, betFilter, updateScrollState]);
 
   const handleSelectRound = (matchId: string, roundId: string) => {
     const found = findRoundInMatches(matchId, roundId);
@@ -327,22 +347,28 @@ export function HistoryScreenV3() {
 
   const showFadeTop = fadeEnabled && !scrollState.atTop;
   const showFadeBottom = fadeEnabled && !scrollState.atBottom;
+  const isEmpty = roundGroups.length === 0;
+  const emptyState = getHistoryEmptyStateContent(historyTab, betFilter);
 
   return (
     <div className={styles.screen}>
       <HistoryHeader onClose={() => undefined} />
       <div className={`${styles.content} ${styles.contentWithBottomTabs}`}>
-        <div ref={listRef} className={styles.list}>
-          {roundGroups.map((group) => (
-            <MatchGroupV3
-              key={group.match.id}
-              match={group.match}
-              dateLabel={group.dateLabel}
-              rounds={group.rounds}
-              firstVisibleRoundId={scrollState.firstVisibleRoundId}
-              onSelectRound={handleSelectRound}
-            />
-          ))}
+        <div ref={listRef} className={`${styles.list} ${isEmpty ? styles.listEmpty : ''}`}>
+          {isEmpty ? (
+            <HistoryEmptyState title={emptyState.title} description={emptyState.description} />
+          ) : (
+            roundGroups.map((group) => (
+              <MatchGroupV3
+                key={group.match.id}
+                match={group.match}
+                dateLabel={group.dateLabel}
+                rounds={group.rounds}
+                firstVisibleRoundId={scrollState.firstVisibleRoundId}
+                onSelectRound={handleSelectRound}
+              />
+            ))
+          )}
         </div>
         <div
           className={`${styles.fadeTop} ${showFadeTop ? '' : styles.fadeHidden}`}
@@ -353,7 +379,12 @@ export function HistoryScreenV3() {
           aria-hidden="true"
         />
       </div>
-      <HistoryBottomTabs activeTab={historyTab} onChange={setHistoryTab} />
+      <HistoryBottomTabsV4
+        activeTab={historyTab}
+        onChange={handleHistoryTabChange}
+        betFilter={betFilter}
+        onBetFilterChange={handleBetFilterChange}
+      />
     </div>
   );
 }

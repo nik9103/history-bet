@@ -14,7 +14,7 @@ export function MatchGroupV3({
   match,
   dateLabel,
   rounds,
-  firstVisibleRoundId,
+  firstVisibleRoundId: _firstVisibleRoundId,
   onSelectRound,
 }: MatchGroupV3Props) {
   return (
@@ -28,7 +28,7 @@ export function MatchGroupV3({
           <RoundRowV3
             key={round.id}
             round={round}
-            hideTopLine={round.id === firstVisibleRoundId}
+            hideTopLine={index === 0}
             hideBottomLine={index === rounds.length - 1}
             onSelect={() => onSelectRound(match.id, round.id)}
           />

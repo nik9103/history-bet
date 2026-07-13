@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { BetItem } from '../data/historyData';
-import { getBetReceiptSections } from '../data/historyData';
+import { getBetAmountVariant, getBetReceiptSections } from '../data/historyData';
 import { AmountDisplay } from './AmountDisplay';
 import { BetIcon } from './icons/DiceIcon';
 import { ChevronIcon } from './icons/Icons';
@@ -20,7 +20,8 @@ export function BetRowV3({
   variant = 'default',
 }: BetRowV3Props) {
   const [hovered, setHovered] = useState(false);
-  const positive = bet.amount.startsWith('+');
+  const isRefund = bet.settlement === 'refund';
+  const amountVariant = getBetAmountVariant(bet);
   const sections = getBetReceiptSections(bet);
 
   return (
@@ -45,12 +46,17 @@ export function BetRowV3({
             <span className={styles.meta}>
               {bet.multiplier}
               <span className={styles.dot}> · </span>
-              {bet.result === 'guess' ? ' Guess' : ' Loss'}
+              {isRefund ? 'Refund' : bet.result === 'guess' ? 'Guess' : 'Loss'}
             </span>
           </div>
         </div>
         <div className={styles.right}>
-          <AmountDisplay amount={bet.amount} subtitle={bet.stake} positive={positive} />
+          <AmountDisplay
+            amount={bet.amount}
+            subtitle={bet.stake}
+            variant={amountVariant}
+            amountSize="caption"
+          />
           <span className={`${styles.chevronBtn} ${expanded ? styles.chevronUp : ''}`}>
             <ChevronIcon direction="down" />
           </span>

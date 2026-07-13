@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { RoundItem as RoundItemType } from '../data/historyData';
+import { resolveRoundAmountVariant } from '../data/historyData';
 import { AmountDisplay } from './AmountDisplay';
 import { TimelineMarker } from './TimelineMarker';
 import { MarketIcon } from './icons/MarketIcon';
@@ -62,6 +63,7 @@ export function RoundRowV3({
               amount={round.amount}
               subtitle={round.subtitle}
               positive={round.amountPositive}
+              variant={resolveRoundAmountVariant(round)}
             />
           )}
           {hasBets && (
