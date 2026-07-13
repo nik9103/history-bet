@@ -19,7 +19,7 @@ export function VariantTabs({ variant, onChange }: VariantTabsProps) {
       >
         Вариант 1
       </button> */}
-      <button
+      {/* <button
         type="button"
         role="tab"
         aria-selected={variant === 'v2'}
@@ -27,7 +27,7 @@ export function VariantTabs({ variant, onChange }: VariantTabsProps) {
         onClick={() => onChange('v2')}
       >
         Вариант 2
-      </button>
+      </button> */}
       <button
         type="button"
         role="tab"

@@ -52,7 +52,9 @@ export function HistoryBottomTabsV4({
   const betRef = useRef<HTMLButtonElement>(null);
   const resultRef = useRef<HTMLButtonElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [thumbStyle, setThumbStyle] = useState<ThumbStyle>({ width: 0, left: 0 });
+  const [filterClipWidth, setFilterClipWidth] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const activeFilter = FILTER_OPTIONS.find((option) => option.id === betFilter) ?? FILTER_OPTIONS[0];
@@ -66,6 +68,17 @@ export function HistoryBottomTabsV4({
       left: activeRef.offsetLeft,
     });
   }, [activeTab]);
+
+  useLayoutEffect(() => {
+    if (activeTab !== 'bet' || !filterButtonRef.current) {
+      setFilterClipWidth(0);
+      return;
+    }
+
+    const buttonWidth = filterButtonRef.current.offsetWidth;
+    const separatorWidth = 13;
+    setFilterClipWidth(buttonWidth + separatorWidth);
+  }, [activeTab, activeFilter.label, menuOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -144,11 +157,19 @@ export function HistoryBottomTabsV4({
           ref={filterRef}
           className={`${styles.filterSection} ${activeTab === 'bet' ? styles.filterSectionVisible : ''} ${menuOpen ? styles.filterSectionMenuOpen : ''}`}
         >
-          <div className={styles.filterSectionClip}>
+          <div
+            className={styles.filterSectionClip}
+            style={
+              activeTab === 'bet' && filterClipWidth > 0
+                ? { maxWidth: `${filterClipWidth}px` }
+                : undefined
+            }
+          >
             <div className={styles.separator} aria-hidden="true" />
 
             <div className={styles.filterWrap}>
               <button
+                ref={filterButtonRef}
                 type="button"
                 className={styles.filter}
                 onClick={handleFilterClick}

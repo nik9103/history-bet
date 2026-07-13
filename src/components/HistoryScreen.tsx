@@ -163,7 +163,7 @@ function HistoryScreenV1() {
 void HistoryScreenV1;
 
 export function HistoryScreen() {
-  const [variant, setVariant] = useState<HistoryVariant>('v2');
+  const [variant, setVariant] = useState<HistoryVariant>('v3');
 
   return (
     <div className={styles.app}>
